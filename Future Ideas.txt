@@ -1,6 +1,0 @@
-Toggle for having start of firing aligned for each cell, or not
-Allow for taking a difference for each cell between a before and after case (e.g. applying a drug)
-
-Ways of sorting the data:
-* Size / capacitance
-* Arbitrary custom fields, depending on number of cell attributes before the dual-column split
