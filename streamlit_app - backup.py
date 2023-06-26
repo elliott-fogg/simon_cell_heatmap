@@ -10,15 +10,6 @@ from data_processing import *
 
 ### TODO: Remove all plots on reupload of a file.
 
-### Current Set-up:
-	# Generate an image as a PNG that is exactly what is shown on the screen.
-	
-	# Later, allow the user to generate a downloadable version that is different
-	# dimensions and resolution.
-
-	# Later, add a second axes to the figure (only on render, not shown), that
-	# shows the details of the plot.
-
 st.set_page_config("Simon's Plot Generator")
 
 print("rerun")
@@ -165,6 +156,152 @@ def cache_bin_cells(sheet_norm, max_current, num_bins):
 	return dfb
 
 
+# def single_heatmap_preprocessing():
+# 	data = state["processed_data"][sheet1]["measurements"]
+
+# 	max_current = sf_ceil(data["current"].max(), 2)
+# 	max_normed_current = sf_ceil(data["normed_current"].max(), 2)
+# 	max_frequency = sf_ceil(data["frequency"].max(), 2)
+# 	norm = state["norm_data"]
+
+# 	state["param_defaults"] = {
+# 		"max_current": max_current,
+# 		"max_normed_current": max_normed_current,
+# 		"max_frequency": max_frequency,
+# 		"num_bins": 100,
+# 		"min_frequency": 0
+# 	}
+
+# 	dfb = cache_bin_cells(data, norm=norm, num_bins=num_bins,
+# 	                      max_current=max_normed_current if norm else max_current)
+
+# 	state["binned_data"] = dfb
+# 	state["set_param_defaults"] = False
+
+
+# def difference_heatmap_preprocessing():
+# 	data1 = state["processed_data"][sheet1]["measurements"]
+# 	data2 = state["processed_data"][sheet2]["measurements"]
+
+# 	norm = state["norm_data"]
+
+# 	# max_current = 
+
+
+
+
+
+
+
+
+
+
+
+
+		# start = time.time()
+		# dfb = bin_cells(state["processed_data"][sheet1]["measurements"],
+		#                 norm=state["norm_data"],
+		#                 max_current=state["plot_max_current"],
+		#                 num_bins=state["plot_num_bins"])
+
+		# print(f"Bin Cells Time: {time.time() - start}s")
+
+		# if sort_key != None:
+		# 	dfi = state["processed_data"][sheet1]["info"] \
+		# 		  .sort_values(sort_key, axis=0, 
+		# 		               ascending=state["sort_ascending"])
+		# 	order = dfi.index.tolist()
+
+		# 	dfb = dfb.loc[order]
+		# 	state["plot_name"] = f"{sheet1} sorted by {sort_key}"
+
+		# else:
+		# 	state["plot_name"] = f"{sheet1}"
+
+		# cmap=None
+
+
+
+
+# def single_heatmap_preprocessing():
+# 	data = state["processed_data"][sheet1]["measurements"]
+
+# 	max_current = sf_ceil(data["current"].max(), 2)
+# 	max_frequency = sf_ceil(data["frequency"].max(), 2)
+
+# 	state["param_defaults"] = {
+# 		"max_current": max_current,
+# 		"max_frequency": max_frequency,
+# 		"num_bins": 100,
+# 		"min_frequency": 0
+# 	}
+
+# 	dfb = bin_cells(state["processed_data"][sheet1]["measurements"],
+# 	                norm=state["norm_data"],
+# 	                max_current=state["plot_max_current"],
+# 	                num_bins=state["plot_num_bins"])
+
+
+
+
+
+
+
+
+# 		if use_type == "Single Heatmap":
+
+# 		start = time.time()
+# 		dfb = bin_cells(state["processed_data"][sheet1]["measurements"],
+# 		                norm=state["norm_data"],
+# 		                max_current=state["plot_max_current"],
+# 		                num_bins=state["plot_num_bins"])
+
+# 		print(f"Bin Cells Time: {time.time() - start}s")
+
+# 		if sort_key != None:
+# 			order = state["processed_data"][sheet1]["info"] \
+# 					.sort_values(sort_key,
+# 					             axis=0,
+# 					             ascending=state["sort_ascending"]) \
+# 					.index.tolist()
+
+# 			dfb = dfb.loc[order]
+# 			state["plot_name"] = f"{sheet1} sorted by {sort_key}"
+
+# 		else:
+# 			state["plot_name"] = f"{sheet1}"
+
+# 		cmap=None
+
+
+# def difference_heatmap_default_params():
+# 	pass
+
+
+
+
+# def difference_heatmap_preprocessing():
+# 	data = state["processed_data"][sheet1]["measurements"]
+
+
+
+# def process_single_heatmap():
+# 	dfb = bin_cells(state["processed_data"][sheet1]["measurements"],
+# 	                norm=state["norm_data"], max_current=state["plot_max_current"],
+# 	                num_bins=plot_num_bins)
+
+# 	if sort_key != None:
+# 		order = state["processed_data"][sheet1]["info"] \
+# 			.sort_values(sort_key, axis=0, ascending=state["sort_ascending"]) \
+# 			.index.tolist()
+# 		dfb = dfb.loc[order]
+# 		state["plot_name"] = f"{sheet1} sorted by {sort_key}"
+
+# 	else:
+# 		state["plot_name"] = sheet1
+
+# 	cmap=state["plot_cmap"]
+
 def calculate_difference_max():
 	# Check to make sure cells match up
 	dfi1 = state["processed_data"][sheet1]["info"].reset_index()
@@ -196,11 +333,14 @@ def calculate_difference_max():
 	dfb = dfb1 - dfb2
 
 
+
+
 def generate_plot():	
 	# Frequency Color Cap / Colour Scaling
 
 	fig = plt.figure(figsize=(6.4, 4.8))
 	ax1 = fig.add_subplot(111)
+	ax2 = fig.add_subplot(211)
 
 	chosen_sort_option = state["sort_key_select"]
 	_, sort_key, sort_sheet = state["sort_keys"][chosen_sort_option]
@@ -279,7 +419,7 @@ def generate_plot():
 	cmap = "plasma"
 
 	# Set up dual plots
-	# fig, (ax1, ax2) = plt.subplots(2)
+	fig, (ax1, ax2) = plt.subplots(2)
 
 	# Manipulate Plot
 	sns.heatmap(ax=ax1, data=dfb, cmap=cmap, vmin=vmin, vmax=vmax)
@@ -342,15 +482,11 @@ def generate_plot():
 		ax1.set_yticks([])
 
 
-	img_png = io.BytesIO()
-	fig.savefig(img_png, format="png", bbox_inches="tight")
-
-	img_pdf = io.BytesIO()
-	fig.savefig(img_pdf, format="pdf", bbox_inches="tight")
+	img = io.BytesIO()
+	fig.savefig(img, format="png", bbox_inches="tight")
 
 	state["plot_fig"] = fig
-	state["plot_image"] = img_png
-	state["plot_pdf"] = img_pdf
+	state["plot_image"] = img
 
 	state["plot_state"] = "plotted"
 	start_render()
@@ -407,6 +543,15 @@ css += """
 st.write("# COOL NAME PENDING")
 
 if (not state["selected_file"]) or (state["file_processed"]):
+	# if not state["selected_file"]:
+	# 	tabs = mySidebar.tabs(["Load data"])
+	# else:
+	# 	tabs = mySidebar.tabs(["Load data", "Plot Details", "Axes", "Output"])
+
+	# with tabs[0]:
+	# 	st.file_uploader("Upload a new file:", on_change=loaded_file,
+	#                    	 key="file_uploader")
+	# 	st.button("Use Sample Dataset", on_click=load_sample_dataset)
 
 	cols = st.columns([2,1])
 
@@ -553,21 +698,55 @@ st.button("Generate Plot",
           type="primary",
           disabled=(state["plot_state"]=="plotted"))
 
+# if state["plot_state"] == "plotted":
+# 	st.button("Generate Plot", disabled=True, type="primary")
+
+# elif state["plot_state"] == None:
+# 	st.button("Generate Plot",
+# 	          on_click=start_plot,
+# 	          type="primary")
 
 if state["plot_state"] == None:
 	css += """img {filter: grayscale(100%)}"""
-
 
 ### Plot Rendering #############################################################
 
 if state["plot_fig"]:
 	fig_plot = st.image(state["plot_image"])
 
-	st.download_button("Download Plot",
-	                   data=state["plot_pdf"],
-	                   mime=f"image/pdf", # Hard-coded for now
-	                   file_name=f"{state['plot_name']}.pdf");
+	with st.expander("Plot Size Parameters"):
+		st.number_input("Width (mm):", value=160, step=1,
+			            on_change=render_details_changed, key="plot_width")
 
+		st.number_input("Height (mm):", value=120, step=1,
+			            on_change=render_details_changed, key="plot_height")
+
+		st.number_input("Resolution (dpi):", value=100, step=1,
+			            on_change=render_details_changed, key="plot_dpi")
+
+
+	cols = st.columns([1,3])
+	with cols[0]:
+		st.selectbox("Download as:", ["pdf", "svg", "png", "jpg"],
+		             on_change=render_details_changed, key="plot_data_type")
+
+
+	if state["render_state"] == None:
+		st.text("Regenerate plot to download.")
+
+	elif state["render_state"] == "render_needed":
+		st.button("Render plot for download",
+		          on_click=start_render)
+
+	elif state["render_state"] == "rendering":
+		with st.spinner("Rendering..."):
+			render_plot()
+
+	elif state["render_state"] == "rendered":
+		st.download_button("Download Plot",
+		                   data=state["plot_data"],
+		                   mime=f'image/{state["plot_data_type"]}',
+		                   file_name=f'{state["plot_name"]}.{state["plot_data_type"]}')
 
 ### Final CSS Object ###########################################################
 #
