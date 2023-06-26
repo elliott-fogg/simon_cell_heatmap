@@ -423,8 +423,8 @@ if (not state["selected_file"]) or (state["file_processed"]):
 	if state["selected_file"] == None:
 
 		### PLACEHOLDER FOR TESTING, REMOVE THIS WHEN DONE ###
-		load_sample_dataset()
-		st.experimental_rerun()
+		# load_sample_dataset()
+		# st.experimental_rerun()
 		###
 
 		st.stop()
