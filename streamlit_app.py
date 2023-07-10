@@ -413,7 +413,7 @@ if (not state["selected_file"]) or (state["file_processed"]):
 	with cols[0]:
 		chosen_file = st.file_uploader("Upload a new file:",
 		                               on_change=loaded_file,
-		                               key="file_uploader2")
+		                               key="file_uploader")
 
 	with cols[1]:
 		vert_space = '<div style="padding: 26px 0px;"></div>'
