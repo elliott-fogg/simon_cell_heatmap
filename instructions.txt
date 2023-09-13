@@ -1,3 +1,53 @@
 # Simon's Heatmap Generator for [STUFF]
 
-This heatmap 
+(Simon, please do this part, this is just a placeholder explanation for now)
+This Heatmap Generator is used for comparing electrophys readings in a standardized way.
+
+# Formatting Data
+1) 	Each excel file can have multiple sheets in it. All sheets should have the
+	same format, and the names of the sheets are how they will be selected in 
+	the software.
+
+2) 	Each sheet should be divided up into 2 parts, top and bottom. The top part
+	has the identifying and sorting information for each cell (see part 3 & 4),
+	while the bottom part has the electrophys data for each reading (see
+	part 5). If in doubt at any point, see the Sample Data for an example of 
+	how the input data should be laid out.
+
+3)	Identifying Information - The first column (Column A) should contain the 
+	labels for each row of this section. The actual names do not particularly 
+	matter, but as a suggestion the first might be 'Date', and the second might 
+	be 'Cell No' (as in the example data). Together, these two rows form a 
+	unique identifier for each cell. While the actual values in these rows are 
+	not actually important, it should be ensured that each cell has a unique 
+	combination of values, and that the same cell in other sheets has an 
+	identical pair of values, to make sure that they can be matched for the 
+	Difference Heatmap. Also, due to the way in which the electrophys data is 
+	laid out, each the identification/sort data for each cell should have one 
+	empty column space in between them (so the first cell identifying data would
+	be in Column B, and the second would be in Column D, etc.)
+
+4)	Sorting Information - Immediately below the Identifying Information, you can 
+	include as many rows as desired (or none, if you like) of Sorting 
+	Information. This can include data like the capacitance or resistance of
+	each cell. The values do not need to be identical for each cell between 
+	sheets - There is an option to choose the value from a specific sheet to 
+	sort by.
+	Below the Sorting Information, there should be a single empty row, to denote 
+	the separation between the Sorting Information and the Electrophys Data
+	below.
+
+5)	Electrophys Data - The electrophys data should be recorded in pairs of 
+	columns for each cell, with the left-hand column of each pair containing the 
+	Current recorded for that spike, and the right-hand column of each pair 
+	containing the recorded Frequency of the spike. The first entry for each 
+	cell should be the starting Current (used for normalisation), with a 
+	corresponding N/A value for the Frequency. 
+	To align with the Identifying Information, the first column (Column A) 
+	should be left empty, and all data should be recorded from Column B onwards.
+	When a the recordings for a given cell have finished, there is no need to 
+	fill in the remaining rows with empty data - just leave them blank and they
+	will be interpreted correctly.
+
+If in any doubts about the instructions, please refer to the Sample Data 
+available on the website, and attempt to copy the format.

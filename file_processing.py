@@ -40,9 +40,15 @@ def sf_round(x, sf=1):
 ### File Loading ###############################################################
 
 def load_sample_data():
+    start = time.time()
     with open("sample_data_file.xlsx", "rb") as f:
-        data = f.read()
-        state["sample_data"] = data
+        data_sample = f.read()
+        state["sample_data"] = data_sample
+    with open("instructions.txt", "r") as f:
+        data_instr = f.read()
+        state["instructions"] = data_instr
+    state["instructions_loaded"] = True
+    print(f"Loaded Sample Data: {time.time() - start}s")
 
 
 def use_sample_data():
@@ -59,6 +65,7 @@ def loaded_file():
         state["file_processed"] = False
         state["selected_file_name"] = state.file_uploaded.name
         state["last_uploaded_file_id"] = state.file_uploaded.id
+        state["page_state"] = 1
         # st.experimental_rerun()
 
 ### Sheet Processing ###########################################################
@@ -96,17 +103,6 @@ def read_excel_file(uploaded_file, container):
     time.sleep(0.5)
     temp_progress.empty()
     temp_text.empty()
-    state["file_processed"] = True
-    chosen_file = None
-
-    ### NEW
-    # time.sleep(0.5)
-    # temp_progress.empty()
-    # temp_text.empty()
-    # state["page_state"] = 2
-    # # state["file_processed"] = True
-    # chosen_file = None
-    ###
 
 
 def split_sheet(df):
@@ -158,7 +154,7 @@ def split_sheet(df):
 
 ### Binning Functions ##########################################################
 
-def bin_cells(df_measurements, norm=False, max_current=None, num_bins=100):
+def bin_cells(df_measurements, norm, max_current, num_bins):
     if norm:
         col_name = "normed_current"
     else:
@@ -196,54 +192,80 @@ def cache_bin_cells(sheet_name, sheet_norm, max_current, num_bins):
 
 
 def process_sheets(use_type, sheet1, sheet2=None):
-    pass
+    """Process the sheet(s) given the current Max Current and Number of Bins. 
+    Everything else, like Max Frequency, only induces visual changes."""
 
-# def process_sheets():
-#     if state["max_current_set"]:
-#         max_current = state["max_current_value"]
-#     else:
-#         max_current = 100 # TODO: Precalculate the max current each time new sheet/s chosen
+    # If the Max Current Locked option has been triggered, then keep the value 
+    # used in Max Current. Otherwise, automatically update the Max Current
+    # (should this be automatically done somewhere else?)
+    if state["max_current_set"]:
+        max_current = state["max_current_value"]
+    else:
+        max_current = 100 # TODO: Check this value, this shouldn't be hard coded
 
-#     chosen_sort_option = state["sort_key_select"]
-#     _, sort_key, sort_sheet = state["sort_keys"][chosen_sort_option]
+    # Don't need these for this function now, as they should be moved to the 
+    # visual manipulations.
 
-#     # Single Heatmap Calculations (1 sheet)
-#     if use_type == "Single Heatmap":
+    # chosen_sort_option = state["sort_key_select"]
+    # _, sort_key, sort_sheet = state["sort_keys"][chosen_sort_option]
 
-#         start = time.time()
-#         dfb = bin_cells(state["processed_data"][sheet1]["measurements"],
-#                         norm=state["norm_data"],
-#                         max_current=state["plot_max_current"],
-#                         num_bins=state["plot_num_bins"])
+    # Single Heatmap Calculations (1 sheet)
+    if use_type == "Single Heatmap":
+        start = time.time()
+        dfb = bin_cells(state["processed_data"][sheet1]["measurements"],
+                        norm=state["norm_data"],
+                        max_current=state["plot_max_current"],
+                        num_bins=state["plot_num_bins"])
 
-#         print(f"Bin Cells Time: {time.time() - start}s")
-
-#         if sort_key != None:
-#             dfi = state["processed_data"][sheet1]["info"] \
-#                   .sort_values(sort_key, axis=0, 
-#                                ascending=state["sort_ascending"])
-#             order = dfi.index.tolist()
-
-#             dfb = dfb.loc[order]
-#             state["plot_name"] = f"{sheet1} sorted by {sort_key}"
-
-#         else:
-#             state["plot_name"] = f"{sheet1}"
+        print(f"Bin Cells Time: {time.time() - start}s")
 
 
-#     # Difference Heatmap Calculations (2 sheets)
-#     elif use_type == "Difference Heatmap":
-#         # Sort sheet2 by order of sheet2_keys in combined df_info
-#         dfb2 = dfb2.loc[dfi[f"index{sheet2}"]].reset_index(drop=True)
-#         dfb = dfb1 - dfb2
-#         state["binned_data"] = dfb
+    # Difference Heatmap Calculations (2 sheets)
+    elif use_type == "Difference Heatmap":
+        # Filter cells that are only in both sheets
+        # Bin each sheet
+        # Take the difference
 
-#         state["plot_name"] = f"{sheet1}-{sheet2} diff sorted by {sort_key} [{sort_sheet}]"
+        dfi1 = state["processed_data"][sheet1]["info"].reset_index()
+        dfi2 = state["processed_data"][sheet2]["info"].reset_index()
+        dfi = pd.merge(dfi1, dfi2, how="inner", on=["Date", "Cell No"],
+                       suffixes=(sheet1, sheet2))
 
-#         state["page_state"] = 4
+        dfb1 = bin_cells(state["processed_data"][sheet1]["measurements"],
+                     norm=state["norm_data"],
+                     max_current=state["plot_max_current"],
+                     num_bins=state["plot_num_bins"])
+
+        dfb1 = dfb1.loc[dfi[f"index{sheet1}"]].reset_index(drop=True)
+
+        dfb2 = bin_cells(state["processed_data"][sheet2]["measurements"],
+                         norm=state["norm_data"],
+                         max_current=state["plot_max_current"],
+                         num_bins=state["plot_num_bins"])
+
+        # Sort sheet2 by order of sheet2_keys in combined df_info
+        dfb2 = dfb2.loc[dfi[f"index{sheet2}"]].reset_index(drop=True)
+
+        dfb = dfb1 - dfb2
+
+    # Store binned data, and update page state
+    state["binned_data"] = dfb
+    state["page_state"] = 4
 
 
 ### Plotting Functions #########################################################
+
+def generate_plot(use_type, sheet1, sheet2, cmap=None):
+    print(f"PLOTTING: {use_type}, {sheet1}, {sheet2}, {cmap}")
+
+    chosen_sort_option = state["sort_key_select"]
+    _, sort_key, sort_sheet = state["sort_keys"][chosen_sort_option]
+
+    # Single Heatmap
+    if use_type == "Single Heatmap":
+        print(f"Plotting Single Heatmap: {sheet1}")
+
+        start = time.time()
 
 
 def generate_plot(use_type, sheet1, sheet2=None, cmap=None):
@@ -408,6 +430,7 @@ def generate_plot(use_type, sheet1, sheet2=None, cmap=None):
     state["plot_pdf"] = img_pdf
 
     state["plot_state"] = "plotted"
+    state["page_state"] = 6
 
 
 ### Rendering Functions ########################################################
